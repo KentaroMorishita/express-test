@@ -3,13 +3,17 @@ import * as http from 'http';
 import * as path from 'path';
 import * as favicon from 'serve-favicon';
 import * as logger from 'morgan';
+import * as methodOverride from 'method-override';
 import * as cookieParser from 'cookie-parser';
 import * as bodyParser from 'body-parser';
 
 import { index } from './routes/index';
 import { users } from './routes/users';
+import { posts } from './routes/posts';
 
 const app = express();
+
+app.set('env', process.env.NODE_ENV || 'development');
 
 // view engine setup
 app.set('views', path.resolve('views'));
@@ -20,11 +24,13 @@ app.set('view engine', 'pug');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(methodOverride('_method'));
 app.use(cookieParser());
 app.use(express.static(path.resolve('public')));
 
 app.use('/', index);
 app.use('/users', users);
+app.use('/posts', posts);
 
 // catch 404 and forward to error handler
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {

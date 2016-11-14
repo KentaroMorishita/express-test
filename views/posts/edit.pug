@@ -1,0 +1,11 @@
+extends ../layout
+
+block content
+  h1 Edit #{id}
+  form(method="post", action="/posts/" + id + "?_method=PUT")
+    div: label title 
+      input(type="text", name="title" value=post.title)
+    div: label body
+      input(type="text", name="body" value=post.body)
+    input(type="hidden", name="id", value=id)
+    input(type="submit", value="update")
