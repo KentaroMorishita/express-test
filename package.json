@@ -1,0 +1,25 @@
+{
+  "name": "express-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kentaro Morishita",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.0.33",
+    "express": "^4.14.0",
+    "install": "^0.8.2"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-connect": "^5.0.0",
+    "gulp-webpack": "^1.5.0",
+    "json-loader": "^0.5.4",
+    "ts-loader": "^1.2.0",
+    "typescript": "^2.0.9",
+    "webpack-stream": "^3.2.0"
+  }
+}

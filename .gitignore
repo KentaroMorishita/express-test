@@ -1,0 +1,19 @@
+# temp files from editors
+*~
+*.bak
+tags
+.DS_Store
+._.DS_Store
+Thumbs.db
+desktop.ini
+.buildpath
+.project
+.settings
+*.tmproj
+nbproject/
+.idea
+.vscode
+
+node_modules
+typings
+*.map

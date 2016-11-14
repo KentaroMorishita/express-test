@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"outDir": "public/assets/js/",
+		"sourceMap": true,
+		"target": "es6",
+		"lib": [
+			"es6",
+			"dom"
+		],
+		"module": "commonjs",
+		"noImplicitAny": false
+	},
+	"exclude": [
+		"node_modules"
+	]
+}
