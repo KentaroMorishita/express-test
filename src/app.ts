@@ -12,7 +12,7 @@ import { users } from './routes/users';
 const app = express();
 
 // view engine setup
-app.set('views', 'views');
+app.set('views', path.resolve('views'));
 app.set('view engine', 'pug');
 
 // uncomment after placing your favicon in /public
@@ -21,7 +21,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static('public'));
+app.use(express.static(path.resolve('public')));
 
 app.use('/', index);
 app.use('/users', users);
