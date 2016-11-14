@@ -1,5 +1,15 @@
-const path = require('path');
 const webpack = require('webpack');
+const path = require('path');
+const fs = require('fs');
+
+const nodeModules = {};
+fs.readdirSync('node_modules')
+	.filter((x) => {
+		return ['.bin'].indexOf(x) === -1;
+	})
+	.forEach((mod) => {
+		nodeModules[mod] = 'commonjs ' + mod;
+	});
 
 const WebpackConfig = {
 	entry: {
@@ -16,6 +26,7 @@ const WebpackConfig = {
 		extensions: ['', '.ts', '.webpack.js', '.web.js', '.js', '.json']
 	},
 	target: 'node',
+	externals: nodeModules,
 	node: {
 		console: 'empty',
 		fs: 'empty',
