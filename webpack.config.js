@@ -13,12 +13,11 @@ fs.readdirSync('node_modules')
 
 const WebpackConfig = {
 	entry: {
-		app: "./src/app.ts"
+		bootstrap: "./src/bootstrap.ts"
 	},
 	output: {
 		filename: '[name].js'
 	},
-	devtool: 'source-map',
 	resolve: {
 		root: [
 			path.join(__dirname, 'node_modules')
