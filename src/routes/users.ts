@@ -1,17 +1,12 @@
 import * as express from 'express';
-import {connection} from '../db';
+import { db, sequelize } from '../models';
 
 const router = express.Router();
 
 /* GET users listing. */
 router.get('/', (req: express.Request, res: express.Response, next: express.NextFunction) => {
 
-    connection.query("select * from users where email LIKE ?",
-        ["%gmail%"],
-        (err, rows) => {
-            console.log(rows);
-            res.send(rows);
-        });
+    db.User.findAll({}).done(data => res.send(data));
 
 });
 

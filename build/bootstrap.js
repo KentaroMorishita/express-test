@@ -47,7 +47,7 @@
 	"use strict";
 	const http = __webpack_require__(1);
 	const app_1 = __webpack_require__(2);
-	const debug = __webpack_require__(14)('express-test:server');
+	const debug = __webpack_require__(17)('express-test:server');
 	const port = process.env.PORT || 9000;
 	const server = http.createServer(app_1.default.set('port', port));
 	server.listen(app_1.default.get('port'), () => {
@@ -102,7 +102,7 @@
 	const bodyParser = __webpack_require__(8);
 	const index_1 = __webpack_require__(9);
 	const users_1 = __webpack_require__(10);
-	const posts_1 = __webpack_require__(13);
+	const posts_1 = __webpack_require__(14);
 	const app = express();
 	app.set('env', process.env.NODE_ENV || 'development');
 	// view engine setup
@@ -194,14 +194,11 @@
 
 	"use strict";
 	const express = __webpack_require__(3);
-	const db_1 = __webpack_require__(11);
+	const models_1 = __webpack_require__(11);
 	const router = express.Router();
 	/* GET users listing. */
 	router.get('/', (req, res, next) => {
-	    db_1.connection.query("select * from users where email LIKE ?", ["%gmail%"], (err, rows) => {
-	        console.log(rows);
-	        res.send(rows);
-	    });
+	    models_1.db.User.findAll({}).done(data => res.send(data));
 	});
 	exports.users = router;
 
@@ -211,28 +208,61 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const mysql = __webpack_require__(12);
-	exports.connection = mysql.createConnection({
-	    host: process.env.DB_HOST || '172.17.8.101',
-	    user: process.env.DB_USER || 'root',
-	    password: process.env.DB_PASS || 'mysql',
-	    database: process.env.DB_NAME || 'express_db'
+	const Sequelize = __webpack_require__(12);
+	const User = __webpack_require__(13);
+	exports.sequelize = new Sequelize(process.env.DB_NAME || 'express_db', process.env.DB_USER || 'root', process.env.DB_PASS || 'mysql', {
+	    host: '172.17.8.101',
+	    dialect: 'mysql',
+	    pool: {
+	        max: 5,
+	        min: 0,
+	        idle: 10000
+	    }
 	});
+	exports.db = {
+	    User: User.define(exports.sequelize)
+	};
 
 
 /***/ },
 /* 12 */
 /***/ function(module, exports) {
 
-	module.exports = require("mysql");
+	module.exports = require("sequelize");
 
 /***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	const Sequelize = __webpack_require__(12);
+	function define(sequelize) {
+	    const User = sequelize.define('User', {
+	        id: {
+	            type: Sequelize.UUID,
+	            allowNull: false,
+	            primaryKey: true
+	        },
+	        name: Sequelize.STRING(255),
+	        email: Sequelize.STRING(255)
+	    }, {
+	        tableName: 'users',
+	        timestamps: true,
+	        createdAt: "created_at",
+	        updatedAt: "updated_at"
+	    });
+	    return User;
+	}
+	exports.define = define;
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
 	const express = __webpack_require__(3);
-	const db_1 = __webpack_require__(11);
+	const db_1 = __webpack_require__(15);
 	/**
 	 * 投稿コントローラー
 	 *
@@ -380,7 +410,27 @@
 
 
 /***/ },
-/* 14 */
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	const mysql = __webpack_require__(16);
+	exports.connection = mysql.createConnection({
+	    host: process.env.DB_HOST || '172.17.8.101',
+	    user: process.env.DB_USER || 'root',
+	    password: process.env.DB_PASS || 'mysql',
+	    database: process.env.DB_NAME || 'express_db'
+	});
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports) {
+
+	module.exports = require("mysql");
+
+/***/ },
+/* 17 */
 /***/ function(module, exports) {
 
 	module.exports = require("debug");
