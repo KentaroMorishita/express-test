@@ -47,7 +47,7 @@
 	"use strict";
 	const http = __webpack_require__(1);
 	const app_1 = __webpack_require__(2);
-	const debug = __webpack_require__(13)('express-test:server');
+	const debug = __webpack_require__(14)('express-test:server');
 	const port = process.env.PORT || 9000;
 	const server = http.createServer(app_1.default.set('port', port));
 	server.listen(app_1.default.get('port'), () => {
@@ -102,7 +102,7 @@
 	const bodyParser = __webpack_require__(8);
 	const index_1 = __webpack_require__(9);
 	const users_1 = __webpack_require__(10);
-	const posts_1 = __webpack_require__(12);
+	const posts_1 = __webpack_require__(13);
 	const app = express();
 	app.set('env', process.env.NODE_ENV || 'development');
 	// view engine setup
@@ -194,17 +194,11 @@
 
 	"use strict";
 	const express = __webpack_require__(3);
-	const mysql = __webpack_require__(11);
-	const connection = mysql.createConnection({
-	    host: process.env.DB_HOST || '172.17.8.101',
-	    user: process.env.DB_USER || 'root',
-	    password: process.env.DB_PASS || 'mysql',
-	    database: process.env.DB_NAME || 'express_db'
-	});
+	const db_1 = __webpack_require__(11);
 	const router = express.Router();
 	/* GET users listing. */
 	router.get('/', (req, res, next) => {
-	    connection.query("select * from users where email LIKE ?", ["%gmail%"], (err, rows) => {
+	    db_1.connection.query("select * from users where email LIKE ?", ["%gmail%"], (err, rows) => {
 	        console.log(rows);
 	        res.send(rows);
 	    });
@@ -214,36 +208,98 @@
 
 /***/ },
 /* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	const mysql = __webpack_require__(12);
+	exports.connection = mysql.createConnection({
+	    host: process.env.DB_HOST || '172.17.8.101',
+	    user: process.env.DB_USER || 'root',
+	    password: process.env.DB_PASS || 'mysql',
+	    database: process.env.DB_NAME || 'express_db'
+	});
+
+
+/***/ },
+/* 12 */
 /***/ function(module, exports) {
 
 	module.exports = require("mysql");
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	const express = __webpack_require__(3);
+	const db_1 = __webpack_require__(11);
+	/**
+	 * 投稿コントローラー
+	 *
+	 * @class Posts
+	 */
 	class Posts {
+	    /**
+	     * 初期データ取得
+	     *
+	     * @static
+	     *
+	     * @memberOf Posts
+	     */
+	    static initialize() {
+	        db_1.connection.query("select * from posts", (err, rows) => {
+	            Posts.posts = rows;
+	        });
+	    }
 	}
-	Posts.posts = [
-	    { id: 0, title: 'title0', body: 'body0' },
-	    { id: 1, title: 'title1', body: 'body1' },
-	    { id: 2, title: 'title2', body: 'body2' },
-	];
-	Posts.post_count = Posts.posts.length;
+	/**
+	 * 投稿データ格納配列
+	 *
+	 * @static
+	 * @type {Array<Post>}
+	 * @memberOf Posts
+	 */
+	Posts.posts = [];
+	/**
+	 * 一覧表示
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Posts
+	 */
 	Posts.index = (req, res, next) => {
 	    res.render('posts/index', { posts: Posts.posts });
 	};
+	/**
+	 * 詳細
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Posts
+	 */
 	Posts.show = (req, res, next) => {
 	    const post = Posts.posts.filter((v, i) => {
 	        return v.id == req.params.id;
 	    })[0];
 	    res.render('posts/show', { post: post });
 	};
+	/**
+	 * 新規作成
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Posts
+	 */
 	Posts.new = (req, res, next) => {
 	    res.render('posts/new', {});
 	};
+	/**
+	 * 編集
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Posts
+	 */
 	Posts.edit = (req, res, next) => {
 	    const post = Posts.posts.filter((v, i) => {
 	        return v.id == req.params.id;
@@ -253,36 +309,65 @@
 	        id: req.params.id
 	    });
 	};
+	/**
+	 * 新規作成処理
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Posts
+	 */
 	Posts.create = (req, res, next) => {
-	    const post = {
-	        id: Posts.post_count,
-	        title: req.body.title,
-	        body: req.body.body
-	    };
-	    Posts.posts.push(post);
-	    Posts.post_count++;
+	    const post = Object.assign({}, req.body);
+	    db_1.connection.query("insert into posts set ?", post, (err, results) => {
+	        if (err)
+	            throw err;
+	        Posts.posts.push(Object.assign(post, { id: results.insertId }));
+	    });
 	    res.redirect('/posts/');
 	};
+	/**
+	 * 編集処理
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Posts
+	 */
 	Posts.update = (req, res, next) => {
-	    const post = {
-	        id: req.body.id,
-	        title: req.body.title,
-	        body: req.body.body
-	    };
-	    Posts.posts = Posts.posts.map((v, i) => {
-	        if (v.id == parseInt(req.params.id)) {
-	            v = post;
-	        }
-	        return v;
+	    const post = Object.assign({}, req.body);
+	    db_1.connection.query("update posts set ? where ?", [post, { id: post.id }], (err, result) => {
+	        if (err)
+	            throw err;
+	        Posts.posts = Posts.posts.map((v, i) => {
+	            if (v.id == parseInt(req.params.id)) {
+	                v = post;
+	            }
+	            return v;
+	        });
 	    });
 	    res.redirect('/posts/');
 	};
+	/**
+	 * 削除処理
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Posts
+	 */
 	Posts.destroy = (req, res, next) => {
-	    Posts.posts = Posts.posts.filter((v, i) => {
-	        return v.id !== parseInt(req.params.id);
+	    db_1.connection.query("delete from posts where ?", { id: req.body.id }, (err, result) => {
+	        console.log(result);
+	        if (err)
+	            throw err;
+	        Posts.posts = Posts.posts.filter((v, i) => {
+	            return v.id !== parseInt(req.body.id);
+	        });
 	    });
 	    res.redirect('/posts/');
 	};
+	Posts.initialize();
+	/**
+	 * ルーティング
+	 */
 	const router = express.Router();
 	router.get(['/', '/index'], Posts.index);
 	router.get('/:id([0-9]+)', Posts.show);
@@ -295,7 +380,7 @@
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	module.exports = require("debug");

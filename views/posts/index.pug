@@ -9,7 +9,7 @@ block content
         P
           a(href="/posts/edit/" + post.id) edit
           form(method="post" action="/posts/" + post.id + "?_method=delete")
-            input(type="hidden" value=post.id)
+            input(type="hidden" name="id" value=post.id)
             input(type="submit" value="delete")
 
   a(href="/posts/new") Add new 
