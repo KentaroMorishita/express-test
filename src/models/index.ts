@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
-import * as User from './user';
+import ModelUser from './user';
+import ModelPost from './post';
 
 export const sequelize = new Sequelize(
     process.env.DB_NAME || 'express_db',
@@ -16,5 +17,6 @@ export const sequelize = new Sequelize(
 );
 
 export const db = {
-    User: User.define(sequelize)
+    User: ModelUser.define(sequelize),
+    Post: ModelPost.define(sequelize)
 };

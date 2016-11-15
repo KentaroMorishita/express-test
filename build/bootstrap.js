@@ -47,7 +47,7 @@
 	"use strict";
 	const http = __webpack_require__(1);
 	const app_1 = __webpack_require__(2);
-	const debug = __webpack_require__(17)('express-test:server');
+	const debug = __webpack_require__(16)('express-test:server');
 	const port = process.env.PORT || 9000;
 	const server = http.createServer(app_1.default.set('port', port));
 	server.listen(app_1.default.get('port'), () => {
@@ -102,7 +102,7 @@
 	const bodyParser = __webpack_require__(8);
 	const index_1 = __webpack_require__(9);
 	const users_1 = __webpack_require__(10);
-	const posts_1 = __webpack_require__(14);
+	const posts_1 = __webpack_require__(15);
 	const app = express();
 	app.set('env', process.env.NODE_ENV || 'development');
 	// view engine setup
@@ -209,7 +209,8 @@
 
 	"use strict";
 	const Sequelize = __webpack_require__(12);
-	const User = __webpack_require__(13);
+	const user_1 = __webpack_require__(13);
+	const post_1 = __webpack_require__(14);
 	exports.sequelize = new Sequelize(process.env.DB_NAME || 'express_db', process.env.DB_USER || 'root', process.env.DB_PASS || 'mysql', {
 	    host: '172.17.8.101',
 	    dialect: 'mysql',
@@ -220,7 +221,8 @@
 	    }
 	});
 	exports.db = {
-	    User: User.define(exports.sequelize)
+	    User: user_1.default.define(exports.sequelize),
+	    Post: post_1.default.define(exports.sequelize)
 	};
 
 
@@ -236,24 +238,30 @@
 
 	"use strict";
 	const Sequelize = __webpack_require__(12);
-	function define(sequelize) {
-	    const User = sequelize.define('User', {
-	        id: {
-	            type: Sequelize.UUID,
-	            allowNull: false,
-	            primaryKey: true
-	        },
-	        name: Sequelize.STRING(255),
-	        email: Sequelize.STRING(255)
-	    }, {
-	        tableName: 'users',
-	        timestamps: true,
-	        createdAt: "created_at",
-	        updatedAt: "updated_at"
-	    });
-	    return User;
-	}
-	exports.define = define;
+	var ModelUser;
+	(function (ModelUser) {
+	    function define(sequelize) {
+	        const User = sequelize.define('User', {
+	            id: {
+	                type: Sequelize.UUID,
+	                autoIncrement: true,
+	                allowNull: false,
+	                primaryKey: true
+	            },
+	            name: Sequelize.STRING(255),
+	            email: Sequelize.STRING(255)
+	        }, {
+	            tableName: 'users',
+	            timestamps: true,
+	            createdAt: "created_at",
+	            updatedAt: "updated_at"
+	        });
+	        return User;
+	    }
+	    ModelUser.define = define;
+	})(ModelUser = exports.ModelUser || (exports.ModelUser = {}));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = ModelUser;
 
 
 /***/ },
@@ -261,8 +269,40 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	const Sequelize = __webpack_require__(12);
+	var ModelPost;
+	(function (ModelPost) {
+	    function define(sequelize) {
+	        const Post = sequelize.define('posts', {
+	            id: {
+	                type: Sequelize.UUID,
+	                autoIncrement: true,
+	                allowNull: false,
+	                primaryKey: true
+	            },
+	            title: Sequelize.STRING(255),
+	            body: Sequelize.TEXT
+	        }, {
+	            tableName: 'posts',
+	            timestamps: true,
+	            createdAt: "created_at",
+	            updatedAt: "updated_at"
+	        });
+	        return Post;
+	    }
+	    ModelPost.define = define;
+	})(ModelPost = exports.ModelPost || (exports.ModelPost = {}));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = ModelPost;
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
 	const express = __webpack_require__(3);
-	const db_1 = __webpack_require__(15);
+	const models_1 = __webpack_require__(11);
 	/**
 	 * 投稿コントローラー
 	 *
@@ -277,16 +317,16 @@
 	     * @memberOf Posts
 	     */
 	    static initialize() {
-	        db_1.connection.query("select * from posts", (err, rows) => {
-	            Posts.posts = rows;
-	        });
+	        models_1.db.Post.findAll()
+	            .then(data => Posts.posts = data)
+	            .catch(err => { throw err; });
 	    }
 	}
 	/**
 	 * 投稿データ格納配列
 	 *
 	 * @static
-	 * @type {Array<Post>}
+	 * @type {Array<ModelPost.PostInstance>}
 	 * @memberOf Posts
 	 */
 	Posts.posts = [];
@@ -308,10 +348,9 @@
 	 * @memberOf Posts
 	 */
 	Posts.show = (req, res, next) => {
-	    const post = Posts.posts.filter((v, i) => {
-	        return v.id == req.params.id;
-	    })[0];
-	    res.render('posts/show', { post: post });
+	    res.render('posts/show', {
+	        post: Posts.posts.filter(v => v.id == req.params.id)[0]
+	    });
 	};
 	/**
 	 * 新規作成
@@ -331,11 +370,8 @@
 	 * @memberOf Posts
 	 */
 	Posts.edit = (req, res, next) => {
-	    const post = Posts.posts.filter((v, i) => {
-	        return v.id == req.params.id;
-	    })[0];
 	    res.render('posts/edit', {
-	        post: post,
+	        post: Posts.posts.filter(v => v.id == req.params.id)[0],
 	        id: req.params.id
 	    });
 	};
@@ -347,13 +383,12 @@
 	 * @memberOf Posts
 	 */
 	Posts.create = (req, res, next) => {
-	    const post = Object.assign({}, req.body);
-	    db_1.connection.query("insert into posts set ?", post, (err, results) => {
-	        if (err)
-	            throw err;
-	        Posts.posts.push(Object.assign(post, { id: results.insertId }));
-	    });
-	    res.redirect('/posts/');
+	    models_1.db.Post.create(req.body)
+	        .then(data => {
+	        Posts.posts.push(data);
+	        res.redirect('/posts/');
+	    })
+	        .catch(err => { throw err; });
 	};
 	/**
 	 * 編集処理
@@ -363,18 +398,10 @@
 	 * @memberOf Posts
 	 */
 	Posts.update = (req, res, next) => {
-	    const post = Object.assign({}, req.body);
-	    db_1.connection.query("update posts set ? where ?", [post, { id: post.id }], (err, result) => {
-	        if (err)
-	            throw err;
-	        Posts.posts = Posts.posts.map((v, i) => {
-	            if (v.id == parseInt(req.params.id)) {
-	                v = post;
-	            }
-	            return v;
-	        });
-	    });
-	    res.redirect('/posts/');
+	    const id = parseInt(req.body.id);
+	    Posts.posts.filter(v => v.id == id)[0].update(req.body)
+	        .then(() => res.redirect('/posts/'))
+	        .catch(err => { throw err; });
 	};
 	/**
 	 * 削除処理
@@ -384,15 +411,13 @@
 	 * @memberOf Posts
 	 */
 	Posts.destroy = (req, res, next) => {
-	    db_1.connection.query("delete from posts where ?", { id: req.body.id }, (err, result) => {
-	        console.log(result);
-	        if (err)
-	            throw err;
-	        Posts.posts = Posts.posts.filter((v, i) => {
-	            return v.id !== parseInt(req.body.id);
-	        });
-	    });
-	    res.redirect('/posts/');
+	    const id = parseInt(req.body.id);
+	    Posts.posts.filter(v => v.id == id)[0].destroy()
+	        .then(data => {
+	        Posts.posts = Posts.posts.filter(v => v.id !== id);
+	        res.redirect('/posts/');
+	    })
+	        .catch(err => { throw err; });
 	};
 	Posts.initialize();
 	/**
@@ -410,27 +435,7 @@
 
 
 /***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	const mysql = __webpack_require__(16);
-	exports.connection = mysql.createConnection({
-	    host: process.env.DB_HOST || '172.17.8.101',
-	    user: process.env.DB_USER || 'root',
-	    password: process.env.DB_PASS || 'mysql',
-	    database: process.env.DB_NAME || 'express_db'
-	});
-
-
-/***/ },
 /* 16 */
-/***/ function(module, exports) {
-
-	module.exports = require("mysql");
-
-/***/ },
-/* 17 */
 /***/ function(module, exports) {
 
 	module.exports = require("debug");
