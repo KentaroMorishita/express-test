@@ -2,18 +2,18 @@ import * as Sequelize from 'sequelize';
 
 export namespace ModelUser {
 
-    export interface UserAttributes {
+    export interface Attributes {
         id?: number;
         name?: string;
         email?: string;
     }
 
-    export interface UserInstance extends Sequelize.Instance<UserAttributes>, UserAttributes { }
+    export interface Instance extends Sequelize.Instance<Attributes>, Attributes { }
 
-    export interface UserModel extends Sequelize.Model<UserInstance, UserAttributes> { }
+    export interface Model extends Sequelize.Model<Instance, Attributes> { }
 
     export function define(sequelize: Sequelize.Sequelize) {
-        const User: UserModel = sequelize.define<UserInstance, UserAttributes>('User',
+        const Model: Model = sequelize.define<Instance, Attributes>('User',
             {
                 id: {
                     type: Sequelize.UUID,
@@ -31,7 +31,7 @@ export namespace ModelUser {
                 updatedAt: "updated_at"
             }
         );
-        return <UserModel>User;
+        return Model;
     }
 
 }

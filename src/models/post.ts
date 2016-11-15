@@ -2,18 +2,18 @@ import * as Sequelize from 'sequelize';
 
 export namespace ModelPost {
 
-    export interface PostAttributes {
+    export interface Attributes {
         id?: number;
         title?: string;
         body?: string;
     }
 
-    export interface PostInstance extends Sequelize.Instance<PostAttributes>, PostAttributes { }
+    export interface Instance extends Sequelize.Instance<Attributes>, Attributes { }
 
-    export interface PostModel extends Sequelize.Model<PostInstance, PostAttributes> { }
+    export interface Model extends Sequelize.Model<Instance, Attributes> { }
 
     export function define(sequelize: Sequelize.Sequelize) {
-        const Post: PostModel = sequelize.define<PostInstance, PostAttributes>('posts',
+        const Model: Model = sequelize.define<Instance, Attributes>('posts',
             {
                 id: {
                     type: Sequelize.UUID,
@@ -31,7 +31,7 @@ export namespace ModelPost {
                 updatedAt: "updated_at"
             }
         );
-        return <PostModel>Post;
+        return Model;
     }
 
 }

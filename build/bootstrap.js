@@ -241,7 +241,7 @@
 	var ModelUser;
 	(function (ModelUser) {
 	    function define(sequelize) {
-	        const User = sequelize.define('User', {
+	        const Model = sequelize.define('User', {
 	            id: {
 	                type: Sequelize.UUID,
 	                autoIncrement: true,
@@ -256,7 +256,7 @@
 	            createdAt: "created_at",
 	            updatedAt: "updated_at"
 	        });
-	        return User;
+	        return Model;
 	    }
 	    ModelUser.define = define;
 	})(ModelUser = exports.ModelUser || (exports.ModelUser = {}));
@@ -273,7 +273,7 @@
 	var ModelPost;
 	(function (ModelPost) {
 	    function define(sequelize) {
-	        const Post = sequelize.define('posts', {
+	        const Model = sequelize.define('posts', {
 	            id: {
 	                type: Sequelize.UUID,
 	                autoIncrement: true,
@@ -288,7 +288,7 @@
 	            createdAt: "created_at",
 	            updatedAt: "updated_at"
 	        });
-	        return Post;
+	        return Model;
 	    }
 	    ModelPost.define = define;
 	})(ModelPost = exports.ModelPost || (exports.ModelPost = {}));
@@ -326,7 +326,7 @@
 	 * 投稿データ格納配列
 	 *
 	 * @static
-	 * @type {Array<ModelPost.PostInstance>}
+	 * @type {Array<ModelPost.Instance>}
 	 * @memberOf Posts
 	 */
 	Posts.posts = [];

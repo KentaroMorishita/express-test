@@ -7,9 +7,9 @@ import * as methodOverride from 'method-override';
 import * as cookieParser from 'cookie-parser';
 import * as bodyParser from 'body-parser';
 
-import { index } from './routes/index';
-import { users } from './routes/users';
-import { posts } from './routes/posts';
+import { index } from './controllers/index';
+import { users } from './controllers/users';
+import { posts } from './controllers/posts';
 
 const app = express();
 

@@ -9,14 +9,15 @@ import ModelPost from '../models/post';
  */
 class Posts {
 
+
   /**
    * 投稿データ格納配列
    * 
    * @static
-   * @type {Array<ModelPost.PostInstance>}
+   * @type {Array<ModelPost.Instance>}
    * @memberOf Posts
    */
-  public static posts: Array<ModelPost.PostInstance> = [];
+  public static posts: Array<ModelPost.Instance> = [];
 
   /**
    * 初期データ取得
