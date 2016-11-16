@@ -476,7 +476,7 @@
 	    const t = yield models_1.sequelize.transaction();
 	    try {
 	        const data = yield models_1.db.Post.findById(parseInt(req.body.id));
-	        yield data.destroy();
+	        yield data.destroy({ transaction: t });
 	        t.commit();
 	        res.redirect('/posts/');
 	    }

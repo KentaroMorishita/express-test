@@ -117,7 +117,7 @@ class Posts {
     const t = await sequelize.transaction();
     try {
       const data = await db.Post.findById(parseInt(req.body.id));
-      await data.destroy();
+      await data.destroy({ transaction: t });
       t.commit();
       res.redirect('/posts/');
     } catch (err) {
