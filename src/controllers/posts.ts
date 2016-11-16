@@ -15,10 +15,13 @@ class Posts {
    * @type {express.RequestHandler}
    * @memberOf Posts
    */
-  public static index: express.RequestHandler = (req, res, next) => {
-    db.Post.findAll()
-      .then(data => res.render('posts/index', { posts: data }))
-      .catch(err => next(err));
+  public static index: express.RequestHandler = async (req, res, next) => {
+    try {
+      const data = await db.Post.findAll();
+      res.render('posts/index', { posts: data });
+    } catch (err) {
+      next(err);
+    }
   };
 
   /**
@@ -28,10 +31,13 @@ class Posts {
    * @type {express.RequestHandler}
    * @memberOf Posts
    */
-  public static show: express.RequestHandler = (req, res, next) => {
-    db.Post.findById(req.params.id)
-      .then(data => res.render('posts/show', { post: data }))
-      .catch(err => next(err));
+  public static show: express.RequestHandler = async (req, res, next) => {
+    try {
+      const data = await db.Post.findById(req.params.id);
+      res.render('posts/show', { post: data });
+    } catch (err) {
+      next(err);
+    }
   };
 
   /**
@@ -52,10 +58,13 @@ class Posts {
    * @type {express.RequestHandler}
    * @memberOf Posts
    */
-  public static edit: express.RequestHandler = (req, res, next) => {
-    db.Post.findById(req.params.id)
-      .then(data => res.render('posts/edit', { post: data }))
-      .catch(err => next(err));
+  public static edit: express.RequestHandler = async (req, res, next) => {
+    try {
+      const data = await db.Post.findById(req.params.id);
+      res.render('posts/edit', { post: data });
+    } catch (err) {
+      next(err);
+    }
   };
 
   /**
@@ -65,10 +74,16 @@ class Posts {
    * @type {express.RequestHandler}
    * @memberOf Posts
    */
-  public static create: express.RequestHandler = (req, res, next) => {
-    db.Post.create(req.body)
-      .then(() => res.redirect('/posts/'))
-      .catch(err => next(err));
+  public static create: express.RequestHandler = async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+      await db.Post.create(req.body, { transaction: t });
+      t.commit();
+      res.redirect('/posts/');
+    } catch (err) {
+      t.rollback();
+      next(err);
+    }
   };
 
   /**
@@ -78,11 +93,17 @@ class Posts {
    * @type {express.RequestHandler}
    * @memberOf Posts
    */
-  public static update: express.RequestHandler = (req, res, next) => {
-    db.Post.findById(parseInt(req.body.id))
-      .then(data => data.update(req.body))
-      .then(() => res.redirect('/posts/'))
-      .catch(err => next(err));
+  public static update: express.RequestHandler = async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+      const data = await db.Post.findById(parseInt(req.body.id));
+      await data.update(req.body, { transaction: t });
+      t.commit();
+      res.redirect('/posts/');
+    } catch (err) {
+      t.rollback();
+      next(err);
+    }
   };
 
   /**
@@ -92,11 +113,17 @@ class Posts {
    * @type {express.RequestHandler}
    * @memberOf Posts
    */
-  public static destroy: express.RequestHandler = (req, res, next) => {
-    db.Post.findById(parseInt(req.body.id))
-      .then(data => data.destroy())
-      .then(() => res.redirect('/posts/'))
-      .catch(err => next(err));
+  public static destroy: express.RequestHandler = async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+      const data = await db.Post.findById(parseInt(req.body.id));
+      await data.destroy();
+      t.commit();
+      res.redirect('/posts/');
+    } catch (err) {
+      t.rollback();
+      next(err);
+    }
   };
 
 }

@@ -193,6 +193,14 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments)).next());
+	    });
+	};
 	const express = __webpack_require__(3);
 	const models_1 = __webpack_require__(11);
 	/**
@@ -209,16 +217,39 @@
 	 * @type {express.RequestHandler}
 	 * @memberOf Users
 	 */
-	Users.index = (req, res, next) => {
-	    models_1.db.User.findAll()
-	        .then(data => res.send(data))
-	        .catch(err => next(err));
-	};
+	Users.index = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+	    try {
+	        res.send(yield models_1.db.User.findAll());
+	    }
+	    catch (err) {
+	        next(err);
+	    }
+	});
+	/**
+	 * 新規登録
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Users
+	 */
+	Users.new = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+	    const t = yield models_1.sequelize.transaction();
+	    try {
+	        const data = yield models_1.db.User.create(req.params, { transaction: t });
+	        t.commit();
+	        res.send(data);
+	    }
+	    catch (err) {
+	        t.rollback();
+	        next(err);
+	    }
+	});
 	/**
 	 * ルーティング
 	 */
 	const router = express.Router();
 	router.get('/', Users.index);
+	router.get('/new/:name/:email', Users.new);
 	exports.users = router;
 
 
@@ -320,6 +351,14 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+	    return new (P || (P = Promise))(function (resolve, reject) {
+	        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+	        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+	        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+	        step((generator = generator.apply(thisArg, _arguments)).next());
+	    });
+	};
 	const express = __webpack_require__(3);
 	const models_1 = __webpack_require__(11);
 	/**
@@ -336,11 +375,15 @@
 	 * @type {express.RequestHandler}
 	 * @memberOf Posts
 	 */
-	Posts.index = (req, res, next) => {
-	    models_1.db.Post.findAll()
-	        .then(data => res.render('posts/index', { posts: data }))
-	        .catch(err => next(err));
-	};
+	Posts.index = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+	    try {
+	        const data = yield models_1.db.Post.findAll();
+	        res.render('posts/index', { posts: data });
+	    }
+	    catch (err) {
+	        next(err);
+	    }
+	});
 	/**
 	 * 詳細
 	 *
@@ -348,11 +391,15 @@
 	 * @type {express.RequestHandler}
 	 * @memberOf Posts
 	 */
-	Posts.show = (req, res, next) => {
-	    models_1.db.Post.findById(req.params.id)
-	        .then(data => res.render('posts/show', { post: data }))
-	        .catch(err => next(err));
-	};
+	Posts.show = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+	    try {
+	        const data = yield models_1.db.Post.findById(req.params.id);
+	        res.render('posts/show', { post: data });
+	    }
+	    catch (err) {
+	        next(err);
+	    }
+	});
 	/**
 	 * 新規作成
 	 *
@@ -370,11 +417,15 @@
 	 * @type {express.RequestHandler}
 	 * @memberOf Posts
 	 */
-	Posts.edit = (req, res, next) => {
-	    models_1.db.Post.findById(req.params.id)
-	        .then(data => res.render('posts/edit', { post: data }))
-	        .catch(err => next(err));
-	};
+	Posts.edit = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+	    try {
+	        const data = yield models_1.db.Post.findById(req.params.id);
+	        res.render('posts/edit', { post: data });
+	    }
+	    catch (err) {
+	        next(err);
+	    }
+	});
 	/**
 	 * 新規作成処理
 	 *
@@ -382,11 +433,18 @@
 	 * @type {express.RequestHandler}
 	 * @memberOf Posts
 	 */
-	Posts.create = (req, res, next) => {
-	    models_1.db.Post.create(req.body)
-	        .then(() => res.redirect('/posts/'))
-	        .catch(err => next(err));
-	};
+	Posts.create = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+	    const t = yield models_1.sequelize.transaction();
+	    try {
+	        yield models_1.db.Post.create(req.body, { transaction: t });
+	        t.commit();
+	        res.redirect('/posts/');
+	    }
+	    catch (err) {
+	        t.rollback();
+	        next(err);
+	    }
+	});
 	/**
 	 * 編集処理
 	 *
@@ -394,12 +452,19 @@
 	 * @type {express.RequestHandler}
 	 * @memberOf Posts
 	 */
-	Posts.update = (req, res, next) => {
-	    models_1.db.Post.findById(parseInt(req.body.id))
-	        .then(data => data.update(req.body))
-	        .then(() => res.redirect('/posts/'))
-	        .catch(err => next(err));
-	};
+	Posts.update = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+	    const t = yield models_1.sequelize.transaction();
+	    try {
+	        const data = yield models_1.db.Post.findById(parseInt(req.body.id));
+	        yield data.update(req.body, { transaction: t });
+	        t.commit();
+	        res.redirect('/posts/');
+	    }
+	    catch (err) {
+	        t.rollback();
+	        next(err);
+	    }
+	});
 	/**
 	 * 削除処理
 	 *
@@ -407,12 +472,19 @@
 	 * @type {express.RequestHandler}
 	 * @memberOf Posts
 	 */
-	Posts.destroy = (req, res, next) => {
-	    models_1.db.Post.findById(parseInt(req.body.id))
-	        .then(data => data.destroy())
-	        .then(() => res.redirect('/posts/'))
-	        .catch(err => next(err));
-	};
+	Posts.destroy = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+	    const t = yield models_1.sequelize.transaction();
+	    try {
+	        const data = yield models_1.db.Post.findById(parseInt(req.body.id));
+	        yield data.destroy();
+	        t.commit();
+	        res.redirect('/posts/');
+	    }
+	    catch (err) {
+	        t.rollback();
+	        next(err);
+	    }
+	});
 	/**
 	 * ルーティング
 	 */
