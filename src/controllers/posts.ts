@@ -1,6 +1,5 @@
 import * as express from 'express';
 import { db, sequelize } from '../models';
-import ModelPost from '../models/post';
 
 /**
  * 投稿コントローラー

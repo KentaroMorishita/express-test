@@ -195,11 +195,30 @@
 	"use strict";
 	const express = __webpack_require__(3);
 	const models_1 = __webpack_require__(11);
+	/**
+	 * ユーザーコントローラー
+	 *
+	 * @class Users
+	 */
+	class Users {
+	}
+	/**
+	 * 一覧
+	 *
+	 * @static
+	 * @type {express.RequestHandler}
+	 * @memberOf Users
+	 */
+	Users.index = (req, res, next) => {
+	    models_1.db.User.findAll()
+	        .then(data => res.send(data))
+	        .catch(err => next(err));
+	};
+	/**
+	 * ルーティング
+	 */
 	const router = express.Router();
-	/* GET users listing. */
-	router.get('/', (req, res, next) => {
-	    models_1.db.User.findAll({}).done(data => res.send(data));
-	});
+	router.get('/', Users.index);
 	exports.users = router;
 
 
