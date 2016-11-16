@@ -241,7 +241,7 @@
 	var ModelUser;
 	(function (ModelUser) {
 	    function define(sequelize) {
-	        const Model = sequelize.define('User', {
+	        const Model = sequelize.define('users', {
 	            id: {
 	                type: Sequelize.UUID,
 	                autoIncrement: true,
@@ -309,27 +309,7 @@
 	 * @class Posts
 	 */
 	class Posts {
-	    /**
-	     * 初期データ取得
-	     *
-	     * @static
-	     *
-	     * @memberOf Posts
-	     */
-	    static initialize() {
-	        models_1.db.Post.findAll()
-	            .then(data => Posts.posts = data)
-	            .catch(err => { throw err; });
-	    }
 	}
-	/**
-	 * 投稿データ格納配列
-	 *
-	 * @static
-	 * @type {Array<ModelPost.Instance>}
-	 * @memberOf Posts
-	 */
-	Posts.posts = [];
 	/**
 	 * 一覧表示
 	 *
@@ -338,7 +318,9 @@
 	 * @memberOf Posts
 	 */
 	Posts.index = (req, res, next) => {
-	    res.render('posts/index', { posts: Posts.posts });
+	    models_1.db.Post.findAll()
+	        .then(data => res.render('posts/index', { posts: data }))
+	        .catch(err => next(err));
 	};
 	/**
 	 * 詳細
@@ -348,9 +330,9 @@
 	 * @memberOf Posts
 	 */
 	Posts.show = (req, res, next) => {
-	    res.render('posts/show', {
-	        post: Posts.posts.filter(v => v.id == req.params.id)[0]
-	    });
+	    models_1.db.Post.findById(req.params.id)
+	        .then(data => res.render('posts/show', { post: data }))
+	        .catch(err => next(err));
 	};
 	/**
 	 * 新規作成
@@ -370,10 +352,9 @@
 	 * @memberOf Posts
 	 */
 	Posts.edit = (req, res, next) => {
-	    res.render('posts/edit', {
-	        post: Posts.posts.filter(v => v.id == req.params.id)[0],
-	        id: req.params.id
-	    });
+	    models_1.db.Post.findById(req.params.id)
+	        .then(data => res.render('posts/edit', { post: data }))
+	        .catch(err => next(err));
 	};
 	/**
 	 * 新規作成処理
@@ -384,11 +365,8 @@
 	 */
 	Posts.create = (req, res, next) => {
 	    models_1.db.Post.create(req.body)
-	        .then(data => {
-	        Posts.posts.push(data);
-	        res.redirect('/posts/');
-	    })
-	        .catch(err => { throw err; });
+	        .then(() => res.redirect('/posts/'))
+	        .catch(err => next(err));
 	};
 	/**
 	 * 編集処理
@@ -398,10 +376,10 @@
 	 * @memberOf Posts
 	 */
 	Posts.update = (req, res, next) => {
-	    const id = parseInt(req.body.id);
-	    Posts.posts.filter(v => v.id == id)[0].update(req.body)
+	    models_1.db.Post.findById(parseInt(req.body.id))
+	        .then(data => data.update(req.body))
 	        .then(() => res.redirect('/posts/'))
-	        .catch(err => { throw err; });
+	        .catch(err => next(err));
 	};
 	/**
 	 * 削除処理
@@ -411,15 +389,11 @@
 	 * @memberOf Posts
 	 */
 	Posts.destroy = (req, res, next) => {
-	    const id = parseInt(req.body.id);
-	    Posts.posts.filter(v => v.id == id)[0].destroy()
-	        .then(data => {
-	        Posts.posts = Posts.posts.filter(v => v.id !== id);
-	        res.redirect('/posts/');
-	    })
-	        .catch(err => { throw err; });
+	    models_1.db.Post.findById(parseInt(req.body.id))
+	        .then(data => data.destroy())
+	        .then(() => res.redirect('/posts/'))
+	        .catch(err => next(err));
 	};
-	Posts.initialize();
 	/**
 	 * ルーティング
 	 */

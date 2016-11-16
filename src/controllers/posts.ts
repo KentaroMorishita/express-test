@@ -9,29 +9,6 @@ import ModelPost from '../models/post';
  */
 class Posts {
 
-
-  /**
-   * 投稿データ格納配列
-   * 
-   * @static
-   * @type {Array<ModelPost.Instance>}
-   * @memberOf Posts
-   */
-  public static posts: Array<ModelPost.Instance> = [];
-
-  /**
-   * 初期データ取得
-   * 
-   * @static
-   * 
-   * @memberOf Posts
-   */
-  public static initialize() {
-    db.Post.findAll()
-      .then(data => Posts.posts = data)
-      .catch(err => { throw err });
-  }
-
   /**
    * 一覧表示
    * 
@@ -40,7 +17,9 @@ class Posts {
    * @memberOf Posts
    */
   public static index: express.RequestHandler = (req, res, next) => {
-    res.render('posts/index', { posts: Posts.posts });
+    db.Post.findAll()
+      .then(data => res.render('posts/index', { posts: data }))
+      .catch(err => next(err));
   };
 
   /**
@@ -51,9 +30,9 @@ class Posts {
    * @memberOf Posts
    */
   public static show: express.RequestHandler = (req, res, next) => {
-    res.render('posts/show', {
-      post: Posts.posts.filter(v => v.id == req.params.id)[0]
-    });
+    db.Post.findById(req.params.id)
+      .then(data => res.render('posts/show', { post: data }))
+      .catch(err => next(err));
   };
 
   /**
@@ -75,10 +54,9 @@ class Posts {
    * @memberOf Posts
    */
   public static edit: express.RequestHandler = (req, res, next) => {
-    res.render('posts/edit', {
-      post: Posts.posts.filter(v => v.id == req.params.id)[0],
-      id: req.params.id
-    });
+    db.Post.findById(req.params.id)
+      .then(data => res.render('posts/edit', { post: data }))
+      .catch(err => next(err));
   };
 
   /**
@@ -90,11 +68,8 @@ class Posts {
    */
   public static create: express.RequestHandler = (req, res, next) => {
     db.Post.create(req.body)
-      .then(data => {
-        Posts.posts.push(data);
-        res.redirect('/posts/');
-      })
-      .catch(err => { throw err });
+      .then(() => res.redirect('/posts/'))
+      .catch(err => next(err));
   };
 
   /**
@@ -105,10 +80,10 @@ class Posts {
    * @memberOf Posts
    */
   public static update: express.RequestHandler = (req, res, next) => {
-    const id = parseInt(req.body.id);
-    Posts.posts.filter(v => v.id == id)[0].update(req.body)
+    db.Post.findById(parseInt(req.body.id))
+      .then(data => data.update(req.body))
       .then(() => res.redirect('/posts/'))
-      .catch(err => { throw err });
+      .catch(err => next(err));
   };
 
   /**
@@ -119,18 +94,13 @@ class Posts {
    * @memberOf Posts
    */
   public static destroy: express.RequestHandler = (req, res, next) => {
-    const id = parseInt(req.body.id);
-    Posts.posts.filter(v => v.id == id)[0].destroy()
-      .then(data => {
-        Posts.posts = Posts.posts.filter(v => v.id !== id)
-        res.redirect('/posts/');
-      })
-      .catch(err => { throw err });
+    db.Post.findById(parseInt(req.body.id))
+      .then(data => data.destroy())
+      .then(() => res.redirect('/posts/'))
+      .catch(err => next(err));
   };
 
 }
-
-Posts.initialize();
 
 /**
  * ルーティング

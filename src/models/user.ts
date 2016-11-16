@@ -13,7 +13,7 @@ export namespace ModelUser {
     export interface Model extends Sequelize.Model<Instance, Attributes> { }
 
     export function define(sequelize: Sequelize.Sequelize) {
-        const Model: Model = sequelize.define<Instance, Attributes>('User',
+        const Model: Model = sequelize.define<Instance, Attributes>('users',
             {
                 id: {
                     type: Sequelize.UUID,
